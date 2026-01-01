@@ -15,6 +15,7 @@ export interface PluginSettings {
   deleteSource: boolean;
   imageDesc: "origin" | "none" | "removeDefault";
   remoteServerMode: boolean;
+  addPandocFig: boolean;
   [propName: string]: any;
 }
 
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   deleteSource: false,
   imageDesc: "origin",
   remoteServerMode: false,
+  addPandocFig: false,
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -227,5 +229,18 @@ export class SettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl)
+      .setName('启用 Pandoc Fig 格式')
+      .setDesc('开启后，上传图片将生成 ![Alt](Url){#fig:时间戳} 格式')
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.addPandocFig)
+          .onChange(async (value) => {
+            this.plugin.settings.addPandocFig = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
   }
 }

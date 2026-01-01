@@ -272,12 +272,25 @@ export default class imageAutoUploadPlugin extends Plugin {
   replaceImage(imageList: Image[], uploadUrlList: string[]) {
     let content = this.helper.getValue();
 
-    imageList.map(item => {
+    // --- 【修改开始：增加 index 参数】 ---
+    imageList.map((item, index) => {
       const uploadImage = uploadUrlList.shift();
 
       let name = this.handleName(item.name);
-      content = content.replaceAll(item.source, `![${name}](${uploadImage})`);
+
+      let replacement = "";
+      if (this.settings.addPandocFig) {
+        // 批量上传时，为了防止时间戳完全重复，在后面加一个序号
+        const timestamp = (window as any).moment().format("YYYYMMDDHHmmss") + (index > 0 ? `-${index}` : "");
+        replacement = `![${name}](${uploadImage}){#fig:${timestamp}}`;
+      } else {
+        replacement = `![${name}](${uploadImage})`;
+      }
+
+      // 注意：这里用 replacement 替换原来的图片链接
+      content = content.replaceAll(item.source, replacement);
     });
+    // --- 【修改结束】 ---
 
     this.helper.setValue(content);
 
@@ -533,7 +546,16 @@ export default class imageAutoUploadPlugin extends Plugin {
     let progressText = imageAutoUploadPlugin.progressTextFor(pasteId);
     name = this.handleName(name);
 
-    let markDownImage = `![${name}](${imageUrl})`;
+    let markDownImage = "";
+    if (this.settings.addPandocFig) {
+      // 获取当前时间戳 (使用 window as any 规避 TypeScript 类型检查报错)
+      const timestamp = (window as any).moment().format("YYYYMMDDHHmmss");
+      markDownImage = `![${name}](${imageUrl}){#fig:${timestamp}}`;
+    } else {
+      // 如果开关关闭，保持原样
+      markDownImage = `![${name}](${imageUrl})`;
+    }
+    // --- 【修改结束】 ---
 
     imageAutoUploadPlugin.replaceFirstOccurrence(
       editor,
