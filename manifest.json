@@ -1,0 +1,11 @@
+{
+  "id": "Custom-image-upload-plugin",
+  "name": "Custom-image-upload",
+  "version": "1.1.0",
+  "minAppVersion": "0.10.7",
+  "description": "This plugin uploads images from your clipboard by PicGo",
+  "author": "renmu",
+  "authorUrl": "https://github.com/renmu123/obsidian-image-auto-upload-plugin",
+  "isDesktopOnly": true,
+  "fundingUrl": "https://afdian.com/a/renmu123"
+}

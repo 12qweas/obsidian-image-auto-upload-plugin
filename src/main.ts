@@ -429,7 +429,13 @@ export default class imageAutoUploadPlugin extends Plugin {
                 let res: any;
                 res = await this.uploadByClipboard(evt.clipboardData.files);
 
-                if (res.code !== 0) {
+                if (res.success) {
+                  // PicGo 返回的是 result 数组，取第一个作为 URL
+                  return res.result ? res.result[0] : res.data;
+                }
+
+                // 如果没有 success 字段，再回退去判断 code (兼容旧逻辑)
+                if (res.code !== undefined && res.code !== 0) {
                   this.handleFailedUpload(editor, pasteId, res.msg);
                   return;
                 }
