@@ -280,11 +280,18 @@ export default class imageAutoUploadPlugin extends Plugin {
 
       let replacement = "";
       if (this.settings.addPandocFig) {
-        // 批量上传时，为了防止时间戳完全重复，在后面加一个序号
+        // 自动生成时间戳 ID
         const timestamp = (window as any).moment().format("YYYYMMDDHHmmss") + (index > 0 ? `-${index}` : "");
-        replacement = `![${name}](${uploadImage}){#fig:${timestamp}}`;
+        // 【关键修改】：从设置读取宽度并放入 {#fig:...} 内部
+        const width = this.settings.pandocImageWidth || "14cm";
+        replacement = `![${name}](${uploadImage}){#fig:${timestamp} width=${width}}`;
       } else {
         replacement = `![${name}](${uploadImage})`;
+      }
+
+      // 【关键修改】：统一添加空行逻辑
+      if (this.settings.addNewLineAroundImage) {
+        replacement = `\n\n${replacement}\n\n`;
       }
 
       // 注意：这里用 replacement 替换原来的图片链接
@@ -536,7 +543,7 @@ export default class imageAutoUploadPlugin extends Plugin {
 
   insertTemporaryText(editor: Editor, pasteId: string) {
     let progressText = imageAutoUploadPlugin.progressTextFor(pasteId);
-    editor.replaceSelection(progressText + "\n");
+    editor.replaceSelection(progressText);
   }
 
   private static progressTextFor(id: string) {
@@ -554,12 +561,17 @@ export default class imageAutoUploadPlugin extends Plugin {
 
     let markDownImage = "";
     if (this.settings.addPandocFig) {
-      // 获取当前时间戳 (使用 window as any 规避 TypeScript 类型检查报错)
       const timestamp = (window as any).moment().format("YYYYMMDDHHmmss");
-      markDownImage = `![${name}](${imageUrl}){#fig:${timestamp}}`;
+      // 【关键修改】：添加 width 参数
+      const width = this.settings.pandocImageWidth || "14cm";
+      markDownImage = `![${name}](${imageUrl}){#fig:${timestamp} width=${width}}`;
     } else {
-      // 如果开关关闭，保持原样
       markDownImage = `![${name}](${imageUrl})`;
+    }
+
+    // 【关键修改】：添加空行逻辑
+    if (this.settings.addNewLineAroundImage) {
+      markDownImage = `\n\n${markDownImage}\n\n`;
     }
     // --- 【修改结束】 ---
 

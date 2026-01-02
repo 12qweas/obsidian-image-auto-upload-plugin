@@ -16,6 +16,8 @@ export interface PluginSettings {
   imageDesc: "origin" | "none" | "removeDefault";
   remoteServerMode: boolean;
   addPandocFig: boolean;
+  addNewLineAroundImage: boolean;
+  pandocImageWidth: string;
   [propName: string]: any;
 }
 
@@ -33,6 +35,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   imageDesc: "origin",
   remoteServerMode: false,
   addPandocFig: false,
+  addNewLineAroundImage: true,  // [新增] 默认开启自动换行
+  pandocImageWidth: "14cm",
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -241,6 +245,32 @@ export class SettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    new Setting(containerEl)
+      .setName("图片前后添加空行")
+      .setDesc("开启后，生成的图床链接前后会自动包裹两个换行符")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.addNewLineAroundImage)
+          .onChange(async (value) => {
+            this.plugin.settings.addNewLineAroundImage = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // --- [新增：Pandoc 图片宽度] ---
+    new Setting(containerEl)
+      .setName("Pandoc 图片宽度")
+      .setDesc("设置 Pandoc 导出时的图片宽度，例如: 14cm 或 80%。需配合 Pandoc Fig 格式使用。")
+      .addText((text) =>
+        text
+          .setPlaceholder("14cm")
+          .setValue(this.plugin.settings.pandocImageWidth)
+          .onChange(async (value) => {
+            this.plugin.settings.pandocImageWidth = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
   }
 }
